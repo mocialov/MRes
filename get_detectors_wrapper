@@ -1,0 +1,13 @@
+GENERATION=150
+DETECTORS=50
+
+
+eval '
+  for y in {1..'"$GENERATION"'}; do
+    if ((($y)==$GENERATION)); then
+      for i in {1..'"$DETECTORS"'}; do
+        python get_detectors.py $i $y
+      done
+    fi
+  done
+'

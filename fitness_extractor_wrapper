@@ -1,0 +1,24 @@
+GENERATION=230
+DETECTORS=50
+
+
+eval '
+  for y in {1..'"$GENERATION"'}; do
+    if (($y>150)); then
+      for i in {1..'"$DETECTORS"'}; do
+        python fitness_extractor.py $i $y
+      done
+    fi
+  done
+'
+
+
+eval '
+  for y in {1..'"$GENERATION"'}; do
+    for i in {1..'"$DETECTORS"'}; do
+      fitness=$(cat fitness/best_solution_${i}_generation_$y)
+      echo -n "$fitness " >> fitness/fitnesses.txt
+    done
+    echo "" >> fitness/fitnesses.txt
+  done
+'
