@@ -1,12 +1,6 @@
-//ghc genotype.c -c && ghc -c -O2 Safe.hs && ghc --make -no-hs-main -optc-O -I/usr/local/Cellar/opencv/2.4.10.1/include -L/usr/local/Cellar/opencv/2.4.10.1/lib -lopencv_objdetect -lopencv_core -lopencv_highgui -lopencv_video -lopencv_imgproc -L/usr/lib -lc++ -lc++abi -lm -lc -I/usr/include -lopencv_photo -lopencv_contrib -I/Library/Frameworks/Python.framework/Versions/2.7/include/ -lpython2.7 -L/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config -I/Applications/ghc-7.10.1.app/Contents/lib/ghc-7.10.1/include stable_version_gesture_recognition.cpp Safe -c && ghc --make -no-hs-main stable_version_gesture_recognition.o genotype.o Safe -o hand -I/usr/local/Cellar/opencv/2.4.10.1/include -L/usr/local/Cellar/opencv/2.4.10.1/lib -lopencv_objdetect -lopencv_core -lopencv_highgui -lopencv_video -lopencv_imgproc -L/usr/lib -lc++ -lc++abi -lm -lc -I/usr/include -lopencv_photo -lopencv_contrib -I/Library/Frameworks/Python.framework/Versions/2.7/include/ -lpython2.7 -L/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config -I/Applications/ghc-7.10.1.app/Contents/lib/ghc-7.10.1/include -lopencv_flann -lopencv_ml
-
-
-//ghc genotype.c -c
-//ghc -c -O2 Safe.hs
-//ghc --make -no-hs-main -optc-O -L/usr/lib -lc++ -lc++abi -lm -lc -I/usr/include stable_version_gesture_recognition.cpp Safe -c -lm -lstdc++ `pkg-config opencv --cflags --libs`
-//ghc --make -no-hs-main stable_version_gesture_recognition.o genotype.o Safe -o hand -L/usr/lib -I/usr/include -lstdc++ `pkg-config opencv --cflags --libs`
-
-//ghc genotype.c -c && ghc -c -O2 Safe.hs && ghc --make -no-hs-main -optc-O -L/usr/lib -lc++ -lc++abi -lm -lc -I/usr/include stable_version_gesture_recognition.cpp Safe -c -lm -lstdc++ `pkg-config opencv --cflags --libs` && ghc --make -no-hs-main stable_version_gesture_recognition.o genotype.o Safe -o hand -L/usr/lib -I/usr/include -lstdc++ `pkg-config opencv --cflags --libs` -lpython2.7
+/* To compile:
+	ghc genotype.c -c && ghc -c -O2 Safe.hs && ghc --make -no-hs-main -optc-O -L/usr/lib -lc++ -lc++abi -lm -lc -I/usr/include stable_version_gesture_recognition.cpp Safe -c -lm -lstdc++ `pkg-config opencv --cflags --libs` && ghc --make -no-hs-main stable_version_gesture_recognition.o genotype.o Safe -o hand -L/usr/lib -I/usr/include -lstdc++ `pkg-config opencv --cflags --libs` -lpython2.7
+*/
 
 #include<opencv2/opencv.hpp>
 #include<iostream>
@@ -47,16 +41,14 @@ extern "C" {
 	#include <spawn.h>
 #endif
 
-		#include <stdio.h>  /* defines FILENAME_MAX */
-		#ifdef WINDOWS
-		    #include <direct.h>
-		    #define GetCurrentDir _getcwd
-		#else
-		    #include <unistd.h>
-		    #define GetCurrentDir getcwd
-		 #endif
-
-
+#include <stdio.h>  /* defines FILENAME_MAX */
+#ifdef WINDOWS
+    #include <direct.h>
+    #define GetCurrentDir _getcwd
+#else
+    #include <unistd.h>
+    #define GetCurrentDir getcwd
+#endif
 
 
 
@@ -112,6 +104,7 @@ extern char **environ;
 using namespace std;
 using namespace cv;
 
+//convert to string patch
 namespace patch
 {
 	template < typename T > std::string to_string( const T& n )
@@ -122,50 +115,25 @@ namespace patch
 	}
 }
 
-
+//comparing two points
 struct myclass {
     bool operator() (cv::Point pt1, cv::Point pt2) { return (pt1.x < pt2.x);}
 } myobject;
 
 
 
-    Rect main_selected_head; 
-    Rect main_selected_body; 
-    Rect prev_head;
-    Rect prev_body;
+Rect main_selected_head; 
+Rect main_selected_body; 
+Rect prev_head;
+Rect prev_body;
 
 
 cv::Point face_median;
 
 
-
+//distance between 2 poitns
 int point_distance(cv::Point p0, cv::Point p1){
     return sqrt((p0.x - p1.x)*(p0.x - p1.x) + (p0.y - p1.y)*(p0.y - p1.y));
-}
-
-
-bool rect_contains(Rect rect, double x, double y)
-{
-	double pointX = x;
-	double pointY = y;
-        // Just had to change around the math
-	if (pointX < (rect.x + (.5*rect.width)) && pointX > (rect.x - (.5*rect.width)) &&
-           pointY < (rect.y + (.5*rect.height)) && pointY > (rect.y - (.5*rect.height)))
-		return true;
-	else
-		return false;
-}
-
-bool point_in_rect(Rect rect, double x, double y)
-{
-	double pointX = x;
-	double pointY = y;
-        // Just had to change around the math
-	if (pointX < (rect.x + (.5*rect.width)) && pointX > (rect.x - (.5*rect.width)) &&
-           pointY < (rect.y + (.5*rect.height)) && pointY > (rect.y - (.5*rect.height)))
-		return true;
-	else
-		return false;
 }
 
 
@@ -181,53 +149,6 @@ int lies_on_contour(vector<vector<Point> > contours, Point point)
 	return 0;
 }
 
-int reverseInt(int i) {
-    unsigned char c1, c2, c3, c4;
-    c1 = i & 255; c2 = (i >> 8) & 255; c3 = (i >> 16) & 255; c4 = (i >> 24) & 255;
-    return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
-}
-
-std::vector<std::pair<cv::Mat,int> > loadBinary(const std::string &datapath, const std::string &labelpath){
-    std::vector<std::pair<cv::Mat,int> > dataset;
-    std::ifstream datas(datapath.c_str(),std::ios::binary);
-    std::ifstream labels(labelpath.c_str(),std::ios::binary);
-
-    if (!datas.is_open() || !labels.is_open())
-        cout << "binary files could not be loaded" << endl;
-        //throw std::runtime_error("binary files could not be loaded");
-
-    int magic_number=0; int number_of_images=0;int r; int c;
-    int n_rows=0; int n_cols=0; unsigned char temp=0;
-
-    // parse data header
-    datas.read((char*)&magic_number,sizeof(magic_number));
-    magic_number=reverseInt(magic_number);
-    datas.read((char*)&number_of_images,sizeof(number_of_images));
-    number_of_images=reverseInt(number_of_images);
-    datas.read((char*)&n_rows,sizeof(n_rows));
-    n_rows=reverseInt(n_rows);
-    datas.read((char*)&n_cols,sizeof(n_cols));
-    n_cols=reverseInt(n_cols);
-
-    // parse label header - ignore
-    int dummy;
-    labels.read((char*)&dummy,sizeof(dummy));
-    labels.read((char*)&dummy,sizeof(dummy));
-
-    for(int i=0;i<number_of_images;++i){
-        cv::Mat img(n_rows,n_cols,CV_32FC1);
-
-        for(r=0;r<n_rows;++r){
-            for(c=0;c<n_cols;++c){
-                datas.read((char*)&temp,sizeof(temp));
-                img.at<float>(r,c) = ((float)temp); // 0.255 values
-            }
-        }
-        labels.read((char*)&temp,sizeof(temp));
-        dataset.push_back(std::make_pair(img,(int)temp));
-    }
-    return dataset;
-}
 
 //create the cascade classifier object used for the face detection
 CascadeClassifier face_cascade;
@@ -276,24 +197,6 @@ void printGraph(struct Graph* graph)
 double dist(Point x,Point y)
 {
 	return (x.x-y.x)*(x.x-y.x)+(x.y-y.y)*(x.y-y.y);
-}
-
-cv::Mat getHeatMap(cv::Mat input) // input is of type CV_8UC1, return is of type CV_8UC3
-{
-    cv::Mat result(input.rows, input.cols, CV_8UC3);
-    for (int yy = 0; yy < input.rows; ++yy)
-    {
-        for (int xx = 0; xx < input.cols; ++xx)
-        {
-            int pixelValue = input.at<uchar>(yy, xx);
-            if (pixelValue < 128) {
-                result.at<cv::Vec3b>(yy, xx) = cv::Vec3b(0, 0 + 2*pixelValue, 255 - 2 * pixelValue);
-            } else {
-                result.at<cv::Vec3b>(yy, xx) = cv::Vec3b(0 + 2*pixelValue, 255 - 2 * pixelValue, 0);
-            }
-        }
-    }
-    return result;
 }
 
 void save_heatmap(Mat mat, const char* str){ //CV_32F
@@ -359,6 +262,14 @@ void initFaces(){
 }
 
 //function detects faces on a frame and returns a vector with rectangles that correspond to the detected faces
+//function is adapted to do some post-processing for detecting NAO robot's head and torso
+//Look at the MSc Software Engineering to find a way to do the same for people's faces and upper bodies
+
+//Basically, the NAO detection happens as follows:
+// 1) All faces/bodies are found
+// 2) the ones below/above the half of the screen are ignored due to the assumptions
+// 3) circles are found in every found face/torso using Hough circles function
+// 4) the ones that do not have circles are ignored
 Rect detectFaces(Mat frame){
 	//convert captured image to gray scale and equalize
 	cvtColor(frame, grayscaleFrame, CV_BGR2GRAY);
@@ -374,10 +285,10 @@ Rect detectFaces(Mat frame){
             }
         }
 
-int face_border_x = 80;
-int face_border_y = 20;
-int face_border_x1 = 230;
-int face_border_y1 = 120;
+	int face_border_x = 80;
+	int face_border_y = 20;
+	int face_border_x1 = 230;
+	int face_border_y1 = 120;
 
     Rect main_selected_head11; 
     main_selected_head11.x = face_border_x;
@@ -385,21 +296,17 @@ int face_border_y1 = 120;
     main_selected_head11.width = face_border_x1;
     main_selected_head11.height = face_border_y1;
 
-rectangle(frame, main_selected_head11, Scalar(0,0,255));
+	rectangle(frame, main_selected_head11, Scalar(0,0,255));
 
 
-        std::vector<Rect> selected_head;
-
-        for(int i = 0; i < all_faces.size(); i++){
-            if(((all_faces[i] & main_selected_head11).area() == all_faces[i].width*all_faces[i].height)){
-                    selected_head.push_back(all_faces[i]);
-                    //rectangle(frame, all_faces[i], Scalar(0,0,0));
-            }
+    std::vector<Rect> selected_head;
+    
+    for(int i = 0; i < all_faces.size(); i++){
+        if(((all_faces[i] & main_selected_head11).area() == all_faces[i].width*all_faces[i].height)){
+                selected_head.push_back(all_faces[i]);
+                //rectangle(frame, all_faces[i], Scalar(0,0,0));
         }
-
-
-	//cout << "faces: " << selected_head.size() << endl;
-
+    }
 
     std::vector<Point> circle_coordinates;
     for(int i = 0; i<selected_head.size(); i++){
@@ -409,53 +316,46 @@ rectangle(frame, main_selected_head11, Scalar(0,0,255));
         for( size_t j = 0; j < circles.size(); j++ ) {
             Point center(cvRound(circles[j][0])+selected_head[i].x, cvRound(circles[j][1])+selected_head[i].y);
             circle_coordinates.push_back(center);
-            //cout << "circle at: " << cvRound(circles[j][0])+selected_head[i].x << " and " << cvRound(circles[j][1])+selected_head[i].y << endl;
+
             circle(frame,center,circles[j][2],Scalar(0,0,255),0);
         }
     }
 
 
-face_median.x=-1;
-face_median.y=-1;
-if(circle_coordinates.size() > 0){
-std::sort(circle_coordinates.begin(), circle_coordinates.end(), myobject);
-face_median = circle_coordinates[(int)(circle_coordinates.size()/2)];
-face_median.y=0;
-circle(frame,face_median,10,Scalar(0,0,255),0);
-}
+	face_median.x=-1;
+	face_median.y=-1;
+	if(circle_coordinates.size() > 0){
+		std::sort(circle_coordinates.begin(), circle_coordinates.end(), myobject);
+		face_median = circle_coordinates[(int)(circle_coordinates.size()/2)];
+		face_median.y=0;
+		circle(frame,face_median,10,Scalar(0,0,255),0);
+	}
 
-if(main_selected_head.x != 999 && main_selected_head.y != 999)
-	prev_head = main_selected_head;
-//main_selected_head.x = 999;
-//main_selected_head.y = 999;
-//main_selected_head.width = 999;
-//main_selected_head.height = 999;
+	if(main_selected_head.x != 999 && main_selected_head.y != 999)
+		prev_head = main_selected_head;
 
-int found_max = -1;
+	int found_max = -1;
 
     for(int i = 0; i < selected_head.size(); i++){
         int found = -1;
         for(int j = 0; j < circle_coordinates.size(); j++){
-cout << "is " << circle_coordinates[j].x << ", " << circle_coordinates[j].y << " inside: " << selected_head[i] << endl;
             if(circle_coordinates[j].inside(selected_head[i])){
                 found++;
             }
         }
-cout << "found: " << found << endl;
-            if((found > found_max)/* && ((selected_head[i].width*selected_head[i].height) < (main_selected_head.width*main_selected_head.height))*/){
-                found_max = found;
-                found = -1;
-                        main_selected_head.x = selected_head[i].x;
-                        main_selected_head.y = selected_head[i].y;
-                        main_selected_head.width = selected_head[i].width;
-                        main_selected_head.height = selected_head[i].height;
-            }
+
+        if((found > found_max)/* && ((selected_head[i].width*selected_head[i].height) < (main_selected_head.width*main_selected_head.height))*/){
+            found_max = found;
+            found = -1;
+            
+			main_selected_head.x = selected_head[i].x;
+            main_selected_head.y = selected_head[i].y;
+            main_selected_head.width = selected_head[i].width;
+            main_selected_head.height = selected_head[i].height;
+        }
     }
 
     //rectangle(frame, main_selected_head, Scalar(0,0,255));
-
-    //cout << main_selected_head.x << " " << main_selected_head.y << endl;
-
 
     Rect face(-1,-1,-1,-1);
     if(main_selected_head.x < 999 and main_selected_head.y < 999 and main_selected_head.width < 999 and main_selected_head.height < 999){
@@ -481,15 +381,11 @@ cout << "found: " << found << endl;
         }
     }
 
-if(face.x == -1 && face.y == -1){
-//cout << "face none" << endl;
-face = prev_head;
-//cout << "face " << face << endl;
-}
+	if(face.x == -1 && face.y == -1){
+		face = prev_head;
+	}
 
-
-//rectangle(frame, face, Scalar(0,0,0));
-//cout << face.x << " " << face.y << " " << face.width << " " << face.height << endl;
+	//rectangle(frame, face, Scalar(0,0,0));
 
     return face;
 }
@@ -500,21 +396,21 @@ Rect detectUpperBodies(Mat frame){
 	cvtColor(frame, grayscaleFrame, CV_BGR2GRAY);
 	//equalizeHist(grayscaleFrame, grayscaleFrame);
 
-        std::vector<Rect> all_bodies;
-        for (int j=1;j<=10;j++){
-            for (int i=0;i<=10;i++){
-	        std::vector<Rect> bodies;
-	        upper_body_cascade.detectMultiScale(grayscaleFrame, bodies, 1+(0.1*j), i, CV_HAAR_DO_ROUGH_SEARCH|CV_HAAR_SCALE_IMAGE, Size(10,10));
-
-                all_bodies.reserve(all_bodies.size() + distance(bodies.begin(),bodies.end()));
-                all_bodies.insert(all_bodies.end(),bodies.begin(),bodies.end());
-            }
+    std::vector<Rect> all_bodies;
+    for (int j=1;j<=10;j++){
+        for (int i=0;i<=10;i++){
+	    	std::vector<Rect> bodies;
+	    	upper_body_cascade.detectMultiScale(grayscaleFrame, bodies, 1+(0.1*j), i, CV_HAAR_DO_ROUGH_SEARCH|CV_HAAR_SCALE_IMAGE, Size(10,10));
+        	
+        	all_bodies.reserve(all_bodies.size() + distance(bodies.begin(),bodies.end()));
+        	all_bodies.insert(all_bodies.end(),bodies.begin(),bodies.end());
         }
+    }
 	
-int body_border_x = 60;
-int body_border_y = 120;
-int body_border_x1 = 250;
-int body_border_y1 = 100;
+	int body_border_x = 60;
+	int body_border_y = 120;
+	int body_border_x1 = 250;
+	int body_border_y1 = 100;
 
     Rect main_selected_body11; 
     main_selected_body11.x = body_border_x;
@@ -522,16 +418,16 @@ int body_border_y1 = 100;
     main_selected_body11.width = body_border_x1;
     main_selected_body11.height = body_border_y1;
 
-rectangle(frame, main_selected_body11, Scalar(0,0,255));
+	rectangle(frame, main_selected_body11, Scalar(0,0,255));
 
-        std::vector<Rect> selected_body;
-
-        for(int i = 0; i < all_bodies.size(); i++){
-            if(((all_bodies[i] & main_selected_body11).area() == all_bodies[i].width*all_bodies[i].height)){
-                    selected_body.push_back(all_bodies[i]);
-                    //rectangle(frame, all_bodies[i], Scalar(0,0,0));
-            }
-        }///finding all rectangles within a big ROI
+    std::vector<Rect> selected_body;
+    
+    for(int i = 0; i < all_bodies.size(); i++){
+        if(((all_bodies[i] & main_selected_body11).area() == all_bodies[i].width*all_bodies[i].height)){
+                selected_body.push_back(all_bodies[i]);
+                //rectangle(frame, all_bodies[i], Scalar(0,0,0));
+        }
+    }///finding all rectangles within a big ROI
 
 
     std::vector<Point> circle_coordinates;
@@ -543,28 +439,18 @@ rectangle(frame, main_selected_body11, Scalar(0,0,255));
             if(face_median.x != -1 && face_median.y != -1 && abs(face_median.x - (cvRound(circles[j][0])+selected_body[i].x+selected_body[i].width/2)) < 10){
                 Point center(cvRound(circles[j][0])+selected_body[i].x, cvRound(circles[j][1])+selected_body[i].y);
                 circle_coordinates.push_back(center);
-                //cout << "circle at: " << cvRound(circles[j][0])+selected_body[i].x << " and " << cvRound(circles[j][1])+selected_body[i].y << endl;
+
                 circle(frame,center,circles[j][2],Scalar(0,0,255),0);
             }
         }
     }///has to be right, because it is showing circles in right places
 
-cout << "before" << endl;
-cout << prev_body.x << " " << prev_body.y << " " << prev_body.width << " " << prev_body.height << endl;
-cout << main_selected_body.x << " " << main_selected_body.y << " " << main_selected_body.width << " " << main_selected_body.height << endl;
 
-if(main_selected_body.x != 999 && main_selected_body.y != 999 && main_selected_body.x != -1 && main_selected_body.y != -1){
-//cout << "prev_body: " << prev_body.x << " " << prev_body.y << endl;
-	prev_body = main_selected_body;
-//cout << "prev_body: " << prev_body.x << " " << prev_body.y << endl;
-}
+	if(main_selected_body.x != 999 && main_selected_body.y != 999 && main_selected_body.x != -1 && main_selected_body.y != -1){
+		prev_body = main_selected_body;
+	}
 
-//main_selected_body.x = 999;
-//main_selected_body.y = 999;
-//main_selected_body.width = 999;
-//main_selected_body.height = 999;
-
-int found_max = -1;
+	int found_max = -1;
 
 
     for(int i = 0; i < selected_body.size(); i++){
@@ -587,8 +473,6 @@ int found_max = -1;
 
 
     rectangle(frame, main_selected_body, Scalar(0,0,255));
-
-    //cout << main_selected_body.x << " " << main_selected_body.y << endl;
 
 
     Rect body(-1,-1,-1,-1);
@@ -615,18 +499,13 @@ int found_max = -1;
         }
     }
  
-if(body.x == -1 && body.y == -1 && main_selected_body.x != 999 && main_selected_body.y != 999){
-body = main_selected_body;
-}
+	if(body.x == -1 && body.y == -1 && main_selected_body.x != 999 && main_selected_body.y != 999){
+		body = main_selected_body;
+	}
 
 
-//rectangle(frame, body, Scalar(0,0,0));
-cout << "after" << endl;
-cout << body.x << " " << body.y << " " << body.width << " " << body.height << endl;
-cout << main_selected_body.x << " " << main_selected_body.y << " " << main_selected_body.width << " " << main_selected_body.height << endl;
+	//rectangle(frame, body, Scalar(0,0,0));
 
-
-	//cout << "bodies: " << selected_body.size() << endl;
 	return body;
 }
 
@@ -674,15 +553,16 @@ void addEdge(int src_id, int dst_id, struct Graph* graph, int src, cv::Point src
 	graph->vertices_added++;
 }
 
+//detect if two nodes are connected in a graph
 int is_connected(struct Graph* graph, int node_i, int node_j){
-	//iterate both strings of feature graphs
-    	int v;
+		//iterate both strings of feature graphs
+    int v;
 	//iterate both feature graphs adjacency lists
-    	for (v = 0; v < graph->V; ++v)
+    for (v = 0; v < graph->V; ++v)
+    {
+    	struct AdjListNode* pCrawl = graph->array[v].head;
+    	while (pCrawl)
     	{
-    		struct AdjListNode* pCrawl = graph->array[v].head;
-    		while (pCrawl)
-    		{
 			if((v == node_i && pCrawl->dest == node_j) || (v == node_j && pCrawl->dest == node_i)) return 1;
 			pCrawl = pCrawl->next;
 		}
@@ -695,6 +575,528 @@ int is_connected(struct Graph* graph, int node_i, int node_j){
    Then graphs are concattenated together to produce a string of feature graphs.
    Function returns a number of frames in a pre-recorded video
 */
+int start_capture(int mode, vector<Graph> &string_feature_graph, int limit, float &diagonal_size, int duration, int video_nr){
+	//Matrices to hold frame, background and foreground
+	Mat frame;
+	Mat back;
+	Mat fore;
+
+	// holds detected palm centres 
+	vector<pair<Point,double> > palm_centers;
+
+	VideoCapture cap;
+
+	//construct file name from given parameters for a pre-recorded video file
+	std::stringstream ss;
+	ss << video_nr;
+	std::string full_filename;
+	string filename = "data/test_data/train_data_";
+	full_filename.append(filename);
+	full_filename.append(ss.str());
+	full_filename.append(".ogv");
+
+
+	//Two modes: 0 - start pre-recorded video; 1 - start camera stream
+	if(mode == 0){
+		cap = VideoCapture(full_filename);
+	}
+	else if(mode == 1){
+		cap = VideoCapture(0);
+	}
+
+	if( !cap.isOpened() )
+		return -1;
+
+	//cv3
+	cv::Ptr<BackgroundSubtractorMOG2> bg = createBackgroundSubtractorMOG2();
+	bg->setNMixtures(3);
+	bg->setDetectShadows(0);
+	//bg->apply(img,mask);
+
+	//cv2
+	//Supporting class that does background substraction
+	//BackgroundSubtractorMOG2 bg;
+	//bg.set("nmixtures",3);
+	//bg.set("detectShadows",false);
+
+	//initialise windows to show results
+	namedWindow("Frame");
+	namedWindow("Background");
+
+	//interval for background update (needed in case if the background changes)
+	int backgroundFrame=500;
+
+	//calculate the diagonal size of the frame (needed for as a factor when calculating distance between features in different frames)
+	double width = cap.get(CV_CAP_PROP_FRAME_WIDTH);
+	double height = cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+	diagonal_size = sqrt(width*width + height*height);
+
+	int frames=0;
+
+	//for a number of frames or until the end of the video
+		for(int r =0;r<mode==1 ? duration : INFINITY;r++)
+		{		
+			//gesture feature hierarchy (0 - no features found)
+			int hierarchy = 0;
+
+			//vector that holds potential limbs
+			vector<Limb> potential_limbs;
+
+			//contours of the detected movement
+			vector<vector<Point> > contours;
+
+			//Get the frame from either a pre-recorded video or a camera stream
+			cap >> frame;
+
+			//pre-recorded video ended - return number of frames
+			if(frame.empty() || frames==limit){ cout << "here" << (frame.empty()) << " " << (frames==limit) << endl;
+	            return frames;}
+
+			frames++;	
+
+			//frame = frame + Scalar(75, 75, 75); //increase the brightness by 75 units
+			//reduceIllumination(frame);
+
+			//two vectors that hold detected faces and upper bodies
+			Rect approx_faces = detectFaces(frame);
+
+			Rect approx_upperBodies = detectUpperBodies(frame);
+
+
+			//Update the current background model and extract the foreground
+			if(backgroundFrame>0)
+			{
+				bg->apply(frame,fore);backgroundFrame--;
+					//bg.operator ()(frame,fore);backgroundFrame--;
+				}else{
+					//bg.operator()(frame,fore,0);
+				bg->apply(frame,fore,0);
+				}
+
+				//Get background image to display it
+				//bg.getBackgroundImage(back);
+            	
+				//Enhance edges in the foreground by applying erosion and dilation
+				erode(fore,fore,Mat());
+				dilate(fore,fore,Mat());
+            	
+				//Find the contours in the foreground
+				findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_TC89_KCOS);
+				vector<vector<Point> > newcontours;
+
+				//find biggest face of all faces detected (only one person is supported in this version)
+				cv::Point biggestUpperBodyCenter(-1, -1);
+				Rect biggestUpperBody;
+				Rect biggestFace;
+				cv::Point biggestFaceCenter(-1, -1);
+				float biggestFaceArea = 0.0;
+				cv::Point possibleElbowStart(-1,-1);
+				cv::Point possibleElbowEnd(-1,-1);
+
+				if(approx_faces.x != -1 && approx_faces.y != -1 && approx_faces.width != -1 && approx_faces.height != -1){
+				//biggestFace = approx_faces[0];
+			    //for (int i = 1; i < approx_faces.size(); i++) {
+				//  if((biggestFace.width * biggestFace.height) < (approx_faces[i].width * approx_faces[i].height))
+					biggestFace = approx_faces;
+			    //}
+
+				rectangle(frame, biggestFace, Scalar(0,0,255));
+
+				biggestFaceArea = biggestFace.width * biggestFace.height;
+				biggestFaceCenter.x = biggestFace.x + biggestFace.width/2.0;
+				biggestFaceCenter.y = biggestFace.y + biggestFace.height/2.0;
+
+				cv::Point pt1(biggestFace.x + biggestFace.width, biggestFace.y + biggestFace.height);
+				cv::Point pt2(biggestFace.x, biggestFace.y);
+
+
+				//find biggest upper body of all upper bodies deteted (only one person is supported in this version)
+				//if(approx_upperBodies.size() > 0){
+					//increase features hierarchy level
+					hierarchy = 1;
+
+					biggestUpperBody = approx_upperBodies;
+
+				//    for (int i = 1; i < approx_upperBodies.size(); i++) {
+				//	  if((biggestUpperBody.width * biggestUpperBody.height) < (approx_upperBodies[i].width * approx_upperBodies[i].height))
+				//		biggestUpperBody = approx_upperBodies[i];
+				//    }	
+
+					rectangle(frame, biggestUpperBody, Scalar(0,0,255));
+
+				    biggestUpperBodyCenter.x = biggestUpperBody.x + biggestUpperBody.width/2.0;
+				    biggestUpperBodyCenter.y = biggestUpperBody.y+biggestUpperBody.height/2.0;//biggestFace.y+biggestFace.height;
+			//}
+
+			// get rid of the contours of the foreground that are on the top of the biggest detected face (restrict current implementation)
+			for(int i=0;i<contours.size();i++){
+				RotatedRect rect_test=minAreaRect(Mat(contours[i]));
+					Rect intersectionRectangle = rect_intersect(biggestFace, rect_test.boundingRect());
+					if((intersectionRectangle.width * intersectionRectangle.height) > biggestFaceArea * 0.5){
+						//..
+					}else{
+						newcontours.push_back(contours[i]);
+					}
+			}
+		}else{
+			newcontours = contours;
+		}
+
+			for(int i=0;i<newcontours.size();i++)
+				//Ignore all small insignificant areas (currently use 30% of the biggest area face)
+				if(contourArea(newcontours[i])>=(biggestFaceArea * 0.3) && (biggestFaceArea > 0.0))		    
+				{
+					possibleElbowStart.x = -1;
+					possibleElbowStart.y = -1;
+					possibleElbowEnd.x = -1;
+					possibleElbowEnd.y = -1;
+
+					vector<Point2f> limb_details_temp;
+
+					Limb limb;
+	      			//default limb
+	      			limb.start.x = -1;
+	      			limb.start.y = -1;
+	      			limb.end.x = -1;
+	      			limb.end.y = -1;
+	      			limb.break_point.x = -1;
+	      			limb.break_point.y = -1;
+					//Draw contour
+					vector<vector<Point> > tcontours;
+					tcontours.push_back(newcontours[i]);
+					//drawContours(frame,tcontours,-1,cv::Scalar(0,0,255),2);
+
+					//Detect Hull in current contour
+					vector<vector<Point> > hulls(1);
+					vector<vector<int> > hullsI(1);
+					convexHull(Mat(tcontours[0]),hulls[0],false);
+					convexHull(Mat(tcontours[0]),hullsI[0],false);
+					//drawContours(frame,hulls,-1,cv::Scalar(0,255,0),2);
+
+					//Find minimum area rectangle to enclose hand
+					RotatedRect rect=minAreaRect(Mat(tcontours[0]));
+					Point2f vertices[4];
+					rect.points(vertices);
+
+					//is a limb?					
+	          			biggestUpperBody.y = biggestUpperBody.y;//+biggestFace.height;
+	          			biggestUpperBody.height = biggestUpperBody.height;
+	
+
+						Rect biggestUpperBodyTemp(biggestUpperBody.tl(), biggestUpperBody.size());  //use copy for expansion
+
+						//extends biggest upper body in width (to increase confidence in the intersection between hand and the upper body)
+						cv::Size deltaSize( biggestUpperBodyTemp.width *1.5, biggestUpperBodyTemp.height);
+						cv::Point offset( deltaSize.width/2, deltaSize.height/2); 
+						biggestUpperBodyTemp += deltaSize*3;
+						biggestUpperBodyTemp -= offset*3;
+
+						rectangle(frame, biggestUpperBodyTemp, Scalar(255,255,255));
+						rectangle(frame, rect.boundingRect(), Scalar(255,255,255));
+
+	          			Rect potential_limb_intersections = rect_intersect(rect.boundingRect(), biggestUpperBodyTemp);
+
+						//extend intersection rectangle
+						cv::Size deltaSize2( potential_limb_intersections.width * .1, potential_limb_intersections.height * .1 );
+						cv::Point offset2( deltaSize2.width/2, deltaSize2.height/2);
+						potential_limb_intersections += deltaSize2;
+						potential_limb_intersections -= offset2;
+
+	          			if(potential_limb_intersections.width * potential_limb_intersections.height > rect.boundingRect().width * rect.boundingRect().height * 0.1){
+							//increase detected features hierarchy level
+							hierarchy = 2;
+	                    	for(int m=0;m<4;m++)
+	                        	if(dist(limb.start, limb.end) < dist((vertices[m] + vertices[(m+1)%4])*.5, (vertices[(m+2)%4] + vertices[(m+3)%4])*.5) && potential_limb_intersections.contains((vertices[m] + vertices[(m+1)%4])*.5))
+	                            {
+	                              	limb.start = (vertices[m] + vertices[(m+1)%4])*.5;
+	                              	limb.end = (vertices[(m+2)%4] + vertices[(m+3)%4])*.5;
+	                              	limb.limb_bounding_rectangle = rect;
+	                            }
+	          			}
+
+					//Find Convex Defects
+					vector<Vec4i> defects;
+					if(hullsI[0].size()>0)
+					{
+						Point2f rect_points[4]; rect.points( rect_points );
+						Point rough_palm_center;
+						convexityDefects(tcontours[0], hullsI[0], defects);
+						if(defects.size()>=3)
+						{
+							vector<Point> palm_points;
+							for(int j=0;j<defects.size();j++)
+							{
+								int startidx=defects[j][0]; Point ptStart( tcontours[0][startidx] );
+								int endidx=defects[j][1]; Point ptEnd( tcontours[0][endidx] );
+								int faridx=defects[j][2]; Point ptFar( tcontours[0][faridx] );
+
+								//Sum up all the hull and defect points to compute average
+								rough_palm_center+=ptFar+ptStart+ptEnd;
+								palm_points.push_back(ptFar);
+								palm_points.push_back(ptStart);
+								palm_points.push_back(ptEnd);
+							}
+
+							//Get palm center by 1st getting the average of all defect points, this is the rough palm center,
+							//Then U chose the closest 3 points ang get the circle radius and center formed from them which is the palm center.
+							rough_palm_center.x/=defects.size()*3;
+							rough_palm_center.y/=defects.size()*3;
+							Point closest_pt=palm_points[0];
+							vector<pair<double,int> > distvec;
+							for(int i=0;i<palm_points.size();i++)
+								distvec.push_back(make_pair(dist(rough_palm_center,palm_points[i]),i));
+							sort(distvec.begin(),distvec.end());
+
+							//Keep choosing 3 points till you find a circle with a valid radius
+							//As there is a high chance that the closes points might be in a linear line or too close that it forms a very large circle
+							pair<Point,double> soln_circle;
+							for(int i=0;i+2<distvec.size();i++)
+							{
+								Point p1=palm_points[distvec[i+0].second];
+								Point p2=palm_points[distvec[i+1].second];
+								Point p3=palm_points[distvec[i+2].second];
+								soln_circle=circleFromPoints(p1,p2,p3);//Final palm center,radius
+								if(soln_circle.second!=0)
+									break;
+							}
+
+							//Find avg palm centers for the last few frames to stabilize its centers, also find the avg radius
+							palm_centers.push_back(soln_circle);
+							if(palm_centers.size()>10)
+								palm_centers.erase(palm_centers.begin());
+
+							Point palm_center;
+							double radius=0;
+							for(int i=0;i<palm_centers.size();i++)
+							{
+								palm_center+=palm_centers[i].first;
+								radius+=palm_centers[i].second;
+							}
+							palm_center.x/=palm_centers.size();
+							palm_center.y/=palm_centers.size();
+							radius/=palm_centers.size();
+
+							//Draw the palm center and the palm circle
+							//The size of the palm gives the depth of the hand
+							//circle(frame,palm_center,5,Scalar(144,144,255),3);
+							//circle(frame,palm_center,radius,Scalar(144,144,255),2);
+
+							//Detect fingers by finding points that form an almost isosceles triangle with certain thesholds
+							int no_of_fingers=0;
+							for(int j=0;j<defects.size();j++)
+							{
+								int startidx=defects[j][0]; Point ptStart( tcontours[0][startidx] );
+								int endidx=defects[j][1]; Point ptEnd( tcontours[0][endidx] );
+								int faridx=defects[j][2]; Point ptFar( tcontours[0][faridx] );
+
+								double Xdist=sqrt(dist(palm_center,ptFar));
+								double Ydist=sqrt(dist(palm_center,ptStart));
+								double length=sqrt(dist(ptFar,ptStart));
+
+								//circle(frame,ptStart,5,Scalar(0,0,255),3);
+
+								double retLength=sqrt(dist(ptEnd,ptFar));
+								//Play with these thresholds to improve performance
+								if(length<=3*radius&&Ydist>=0.4*radius&&length>=10&&retLength>=10&&max(length,retLength)/min(length,retLength)>=0.8)
+									if(min(Xdist,Ydist)/max(Xdist,Ydist)<=0.8)
+									{
+										if((Xdist>=0.1*radius&&Xdist<=1.3*radius&&Xdist<Ydist)||(Ydist>=0.1*radius&&Ydist<=1.3*radius&&Xdist>Ydist)){
+											if(dist(ptEnd, limb.end) <= dist(limb.start, limb.end) * .1){
+												//increment hierarchy level
+												hierarchy = 3;
+											  	limb_details_temp.push_back(Point2f(ptEnd.x, ptEnd.y));
+											}
+											//line( frame, ptEnd, ptFar, Scalar(0,255,0), 1 );
+											no_of_fingers++;
+
+											if(dist(ptStart, limb.start) >= std::min(rect.boundingRect().width, rect.boundingRect().height)*.2 && dist(ptStart, limb.end) >= std::min(rect.boundingRect().width, rect.boundingRect().height)*.2 && lies_on_contour(newcontours, ptStart) && dist(ptStart, ptEnd) > dist(possibleElbowStart, possibleElbowEnd)){
+												possibleElbowStart = ptStart;
+												possibleElbowEnd = ptEnd;
+											}
+										}
+
+									}
+							}
+
+							//circle(frame,possibleElbowStart,5,Scalar(0,255,0),3);
+							//circle(frame,possibleElbowEnd,5,Scalar(255,0,0),3);
+
+							no_of_fingers=min(5,no_of_fingers);
+						}
+
+					}
+
+					//since detected hierarchy 3 data can be very dense, it can be clustered to identify only clusters instead of actual data
+					if(limb_details_temp.size() > 0){
+						Mat labels;
+						int cluster_number = std::min(5, (int)limb_details_temp.size());
+						TermCriteria criteria = TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0 );
+						Mat centers;
+						kmeans(limb_details_temp, cluster_number, labels, criteria, 1, KMEANS_PP_CENTERS, centers);
+
+						for(int h=0;h<centers.rows;h++)
+							limb.details.push_back(Point(centers.at<float>(h,0), centers.at<float>(h,1)));
+
+				    }
+
+					limb.break_point = possibleElbowStart;
+					potential_limbs.push_back(limb);
+				}
+
+				//frame to be used to present a skeletal data from identified end-points
+				Mat skeletonFrame = Mat(frame.rows*.5,frame.cols*.5, CV_8UC3, cv::Scalar(255,255,255));
+				double rad = 5;
+				double scale_factor = .5;
+
+				//face
+				Point faceCenter(biggestFaceCenter.x*scale_factor, biggestFaceCenter.y*scale_factor);
+				circle(skeletonFrame,faceCenter,rad,Scalar(0,255,0),2);
+
+		        if((biggestUpperBodyCenter.x != -1) || (biggestUpperBodyCenter.y != -1)){                     
+		          //neck
+		          Point neckCenter(biggestUpperBodyCenter.x*scale_factor, biggestUpperBodyCenter.y*scale_factor);
+				  circle(skeletonFrame,neckCenter,rad,Scalar(0,0,255),2);
+				  line( skeletonFrame, faceCenter, neckCenter, Scalar(0,0,0), 1, 8 );
+
+		          //shoulders
+		          Point shoulder1Center((biggestUpperBodyCenter.x-biggestUpperBody.width/2.0)*scale_factor, biggestUpperBodyCenter.y*scale_factor);
+				  circle(skeletonFrame,shoulder1Center,rad,Scalar(0,0,255),2);
+				  line( skeletonFrame, shoulder1Center, neckCenter, Scalar(0,0,0), 1, 8 );
+				  Point shoulder2Center((biggestUpperBodyCenter.x+biggestUpperBody.width/2.0)*scale_factor, biggestUpperBodyCenter.y*scale_factor);
+				  circle(skeletonFrame,shoulder2Center,rad,Scalar(0,0,255),2);
+				  line( skeletonFrame, shoulder2Center, neckCenter, Scalar(0,0,0), 1, 8 );
+
+				  //waist
+				  Point waistCenter((biggestUpperBody.tl().x + biggestUpperBody.width/2.0)*scale_factor, (biggestUpperBody.tl().y+biggestUpperBody.height)*scale_factor);
+                                  //cout << waistCenter << endl;
+				  circle(skeletonFrame,waistCenter,rad,Scalar(0,0,255),9);
+				  line( skeletonFrame, shoulder1Center, waistCenter, Scalar(0,0,0), 1, 8 );
+				  line( skeletonFrame, shoulder2Center, waistCenter, Scalar(0,0,0), 1, 8 );
+		        }
+
+				// limbs
+		        for(int p=0; p<potential_limbs.size(); p++){
+		          if(potential_limbs[p].break_point.x != -1 && potential_limbs[p].break_point.y != -1 && potential_limbs[p].start.x != -1 && potential_limbs[p].start.y != -1 && potential_limbs[p].end.x != -1 && potential_limbs[p].end.y != -1){
+					Point limbEnd(potential_limbs[p].end.x*scale_factor, potential_limbs[p].end.y*scale_factor);
+				  	circle(skeletonFrame,limbEnd,rad,Scalar(0,0,0),2);
+					Point limbMiddle(potential_limbs[p].break_point.x*scale_factor, potential_limbs[p].break_point.y*scale_factor);
+				  	circle(skeletonFrame,limbMiddle,rad,Scalar(0,0,0),2);
+				  	Point limbStart(potential_limbs[p].start.x*scale_factor, potential_limbs[p].start.y*scale_factor);
+				  	line( skeletonFrame, limbStart, limbMiddle, Scalar(0,0,0), 1, 8 );
+					line( skeletonFrame, limbMiddle, limbEnd, Scalar(0,0,0), 1, 8 );
+				  }else{
+					  if(potential_limbs[p].start.x != -1 && potential_limbs[p].start.y != -1 && potential_limbs[p].end.x != -1 && potential_limbs[p].end.y != -1){
+				  		Point limbEnd(potential_limbs[p].end.x*scale_factor, potential_limbs[p].end.y*scale_factor);
+				  		circle(skeletonFrame,limbEnd,rad,Scalar(0,0,0),2);
+				  		Point limbStart(potential_limbs[p].start.x*scale_factor, potential_limbs[p].start.y*scale_factor);
+				  		line( skeletonFrame, limbStart, limbEnd, Scalar(0,0,0), 1, 8 );
+				      }
+			  	  }
+
+				  //limb details
+				  for(int l=0; l<potential_limbs[p].details.size(); l++){
+					if(dist(potential_limbs[p].details[l], potential_limbs[p].break_point) != 0.0){
+						Point limb_detal(potential_limbs[p].details[l].x*scale_factor, potential_limbs[p].details[l].y*scale_factor);
+						circle(skeletonFrame,limb_detal,rad,Scalar(0,0,0),2);
+					}
+				  }
+		        }
+
+
+
+					//Below is the construction of the feature graphs (FG)
+
+
+					//feature end-points: 
+					//0-face
+					//1-hand1
+					//2-hand2
+					//3-shoulder1
+					//4-shoulder2
+					//5-elbow1
+					//6-elbow2
+
+		    		// create the graph given in above fugure
+	        		int V = 5;
+	        		struct Graph* graph = createGraph(V);
+
+					//features
+					int item = 1;
+
+					//hierarchy
+					std::stringstream s00;
+					s00 << "hierarchy: " << hierarchy;
+					putText(skeletonFrame, s00.str(), cvPoint(500,15*(item++)), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0,0,0), 1, CV_AA);
+
+					//face-hand
+					std::stringstream s0;
+					s0 << "face-hand-1: ";
+					if(potential_limbs.size() > 0){
+						s0 << (int)round(sqrt(dist(faceCenter, potential_limbs[0].end)));
+						addEdge(0, 1, graph, 0, faceCenter, 1, potential_limbs[0].end, sqrt(dist(faceCenter, potential_limbs[0].end))); //face-hand1
+					}
+					else{
+						s0 << "-";
+						//addEdge(0, 1, graph, 0, Point(0,0), 1, Point(0,0), 0.000001); //face-hand1
+					}
+					//putText(skeletonFrame, s0.str(), cvPoint(30,15*(item++)), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+					std::stringstream s;
+					s << "face-hand-2: ";
+					if(potential_limbs.size() > 1){
+						s << (int)round(sqrt(dist(faceCenter, potential_limbs[1].end)));
+						addEdge(0, 2, graph, 0, faceCenter, 2, potential_limbs[1].end, sqrt(dist(faceCenter, potential_limbs[1].end))); //face-hand2
+					}else{
+						s << "-";
+						//addEdge(graph, 0, Point(0,0), 2, Point(0,0), 0); //face-hand2
+					}
+					//putText(skeletonFrame, s.str(), cvPoint(30,15*(item++)), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+
+
+					//hand-hand
+					std::stringstream s1;
+					s1 << "hand-hand: ";
+					if(potential_limbs.size() == 2){
+						s1 << (int)round(sqrt(dist(potential_limbs[1].end, potential_limbs[0].end)));
+						addEdge(1, 2, graph, 1, potential_limbs[1].end, 2, potential_limbs[0].end, sqrt(dist(potential_limbs[1].end, potential_limbs[0].end))); //hand1-hand2 (same as hand2-hand1)
+					}else{
+						s1 << "-";
+						//addEdge(graph, 1, Point(0,0), 2, Point(0,0), 0); //hand1-hand2 (same as hand2-hand1)
+					}
+					//putText(skeletonFrame, s1.str(), cvPoint(30,15*(item++)), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+
+					//shoulder-shoulder
+					Point shoulder1((biggestUpperBody.x + biggestUpperBody.width/2.0-biggestUpperBody.width/2.0)*scale_factor, (biggestFace.y+biggestFace.height)*scale_factor);
+					Point shoulder2((biggestUpperBody.x + biggestUpperBody.width/2.0+biggestUpperBody.width/2.0)*scale_factor, (biggestFace.y+biggestFace.height)*scale_factor);
+					std::stringstream s2;
+					s2 << "shoulder-shoulder: " << (int)round(sqrt(dist(shoulder1, shoulder2)));
+					//putText(skeletonFrame, s2.str(), cvPoint(30,15*(item++)), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+					addEdge(3, 4, graph, 3, shoulder1, 4, shoulder2, sqrt(dist(shoulder1, shoulder2))); //shoulder1-shoulder2 (same as shoulder2-shoudler1)
+
+					//elbow-elbow
+					std::stringstream s3;
+					s3 << "elbow-elbow: ";
+					if(potential_limbs.size() == 2){
+						s3 << (int)round(sqrt(dist(potential_limbs[0].break_point, potential_limbs[1].break_point)));
+						//addEdge(5, 6, graph, 5, potential_limbs[0].break_point, 6, potential_limbs[1].break_point, sqrt(dist(potential_limbs[0].break_point, potential_limbs[1].break_point))); //elbow1-elbow2 (same as elbow2-elbow1)
+					}else{
+						s3 << "-";
+						//addEdge(graph, 5, Point(0,0), 6, Point(0,0), 0); //elbow1-elbow2 (same as elbow2-elbow1)
+					}
+					//putText(skeletonFrame, s3.str(), cvPoint(30,15*(item++)), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+
+					// show skeleton frame
+					imshow("Frame2",skeletonFrame);
+
+	        		// print the adjacency list representation of the above graph
+	        		//printGraph(graph);
+					string_feature_graph.push_back(*graph);
+
+					imshow("Frame",frame);  //shows frame after frame with pre-recorded or camera stream video together with identified feature end-points
+					if(waitKey(10) >= 0) break;
+		}
+
+		return -1;
+}
 
 
 
@@ -712,27 +1114,12 @@ float GetAngleOfLineBetweenTwoPoints(cv::Point p1, cv::Point p2)
 	return atan2(yDiff, xDiff) * (180 / M_PI); 
 }
 
-double bitstring_to_double(const char* p)
-{
-    unsigned long long x = 0;
-    for (; *p; ++p)
-    {
-        x = (x << 1) + (*p - '0');
-    }
-    double d;
-    memcpy(&d, &x, 8);
-    return d;
-}
-
-
+//Method that creates affinity matrix from an SFG
 Mat match_strings(vector<Graph> test, vector<Graph> query, int max_length){
 
-vector <string> added;
+	vector <string> added;
 
-int graph_c = -1;
-
-
-cout << test.size()*5 << " " << test.size()*5 << endl;
+	int graph_c = -1;
 
 	Mat M = Mat(test.size()*5,test.size()*5, CV_32F, cvScalar(0.));
 
@@ -762,7 +1149,7 @@ cout << test.size()*5 << " " << test.size()*5 << endl;
 								// DIAGONAL - similarity between feature end-point distances
 								if((pCrawl->dest) == (pCrawl2->dest) && (v==v2)){
 									float dn = sqrt(dist(pCrawl->position, pCrawl2->position))/max_length;
-//cout << "accessing: " << graph_c << " " << graph_c << endl;
+
 //									// maximum allowed deviation is 1% of the frame diagonal
 //									if(dn <= max_length*0.01/max_length){
 //										if(max_length > 0.0)
@@ -803,10 +1190,10 @@ for(std::vector<Graph>::iterator test_it_dest = test.begin(); test_it_dest != te
 
 std::stringstream compared;
 compared << (&(*test_it))->id << (&(*test_it))->sfg_index << (&(*test_it_dest))->id << (&(*test_it_dest))->sfg_index << (&(*query_it))->id << (&(*query_it))->sfg_index << (&(*query_it_dest))->id << (&(*query_it_dest))->sfg_index << pCrawl_query_dest->dest << pCrawl2->dest;
-//cout << compared.str() << endl;
+
 
 int found = 0;
-//cout << "is connected: " << 
+
 if (is_connected((&(*test_it)), pCrawl->dest, pCrawl_test_dest->dest) && is_connected((&(*query_it)), pCrawl2->dest, pCrawl_query_dest->dest)) found++;
 
 
@@ -865,95 +1252,69 @@ if(de_diff/360.0 <= 360.0*0.01/360.0){
 }
 
 
-void my_sleep(unsigned msec) {
-    struct timespec req, rem;
-    int err;
-    req.tv_sec = msec / 1000;
-    req.tv_nsec = (msec % 1000) * 1000000;
-    while ((req.tv_sec != 0) || (req.tv_nsec != 0)) {
-        if (nanosleep(&req, &rem) == 0)
-            break;
-        err = 999;
-        // Interrupted; continue
-        if (err == 999) {
-            req.tv_sec = rem.tv_sec;
-            req.tv_nsec = rem.tv_nsec;
-        }
-        // Unhandleable error (EFAULT (bad pointer), EINVAL (bad timeval in tv_nsec), or ENOSYS (function not supported))
-        break;
-    }
-}
-
 // function reads genotype from fifo-queue. Currently function wastes CPU by continuously trying to read the file 
 // After genotype is read, fifo-queue is removed
 void read_ann(Genotype *genotype, char *NEW_GENOTYPE_FILE_NAME, char *NEW_GENOTYPE_FITNESS_FILE_NAME, int with_removal, int node_types_specified, int bypass_lines) {	
-//printf("\n %s \n", NEW_GENOTYPE_FILE_NAME);
 
     int times = 0;
     int redo = 1;
     while(redo){
-//cout << "1" << endl;
-printf("\n %s \n", NEW_GENOTYPE_FILE_NAME);
+
+
         FILE *fp = fopen(NEW_GENOTYPE_FILE_NAME, "rb");
         if ( fp == NULL ){
-//cout << "2" << endl;
-		if(fp != NULL && ftell(fp) >= 0){
+
+			if(fp != NULL && ftell(fp) >= 0){
             		fclose(fp);
-//cout << "3" << endl;
-		}
-//cout << "4" << endl;
-            sleep(1);
+			}
+            
+			sleep(1);
             continue;
 
             read_ann(genotype, NEW_GENOTYPE_FILE_NAME, NEW_GENOTYPE_FITNESS_FILE_NAME, with_removal, node_types_specified, bypass_lines);
         }
+
         while ( !feof (fp) )
         {
-//cout << "5" << endl;
 
-int lines_counter = 0;
-//cout << "5.1" << endl;
-std::ifstream inFile(NEW_GENOTYPE_FILE_NAME); 
-//cout << "5.2" << endl;
-std::string unused;
-//cout << "5.3" << endl;
-while ( std::getline(inFile, unused) ){
-//cout << "5.4" << endl;
-   ++lines_counter;
-//cout << "6" << endl;
-}
-//cout << "6.1" << endl;
-inFile.close();
-//cout << "6.2" << endl;
-if(!bypass_lines)
-if (lines_counter < 2){ /*cout << "7" << endl;*/ sleep(5); continue; }
+			int lines_counter = 0;
 
-//cout << "7.5" << endl;
+			std::ifstream inFile(NEW_GENOTYPE_FILE_NAME); 
+
+			std::string unused;
+
+			while ( std::getline(inFile, unused) ){
+			   ++lines_counter;
+			}
+
+			inFile.close();
+
+			if(!bypass_lines)
+			if (lines_counter < 2){ sleep(5); continue; }
+
+
             redo = 0;
             if(isEmpty(fp) && (fp != NULL && ftell(fp) >= 0)){
-//cout << "8" << endl;
-            fclose(fp);
-//cout << "8.1" << endl;
+            	fclose(fp);
+
                 continue;
             }else{
-//cout << "9" << endl;
                 times++;
                 
                 if(times <= 100){
-//cout << "10" << endl;
+	
                     int result = genotype_fread(genotype, fp, node_types_specified);
-//cout << "10.1" << endl;
-			if(fp != NULL && ftell(fp) >= 0){ //cout << "11" << endl;
-                    		fclose(fp);}
+
+					if(fp != NULL && ftell(fp) >= 0){
+                    		fclose(fp);  
+ 					}
                     //removing file
-//cout << "11.1" << endl;
+
 					if(with_removal)
                     	remove(NEW_GENOTYPE_FILE_NAME);
 
-//cout << "12" << endl;
                     break;
                 }else{
-//cout << "13" << endl;
                     break;
                 }
             }
@@ -962,7 +1323,6 @@ if (lines_counter < 2){ /*cout << "7" << endl;*/ sleep(5); continue; }
     }
     
     if((with_removal && file_exist(NEW_GENOTYPE_FILE_NAME)) || (with_removal && file_exist(NEW_GENOTYPE_FITNESS_FILE_NAME))){
-///cout << "14" << endl;
         read_ann(genotype, NEW_GENOTYPE_FILE_NAME, NEW_GENOTYPE_FITNESS_FILE_NAME, with_removal, node_types_specified, bypass_lines);
     }
 }
@@ -974,37 +1334,10 @@ double round_to_decimal(float f) {
     return atof(buf);
 }
 
-bool reallyIsNan(float x)
-{
-    //Assumes sizeof(float) == sizeof(int)
-    int intIzedX = *(reinterpret_cast<int *>(&x));
-    int clearAllNonNanBits = intIzedX & 0x7F800000;
-    return clearAllNonNanBits == 0x7F800000;
-}
-
-template <bool> struct static_assert;
-template <> struct static_assert<true> { };
-
-template<typename T>
-inline bool is_NaN(T const& x) {
-    static_cast<void>(sizeof(static_assert<std::numeric_limits<T>::has_quiet_NaN>));
-    return std::numeric_limits<T>::has_quiet_NaN and (x != x);
-}
-
-template <typename T>
-inline bool is_inf(T const& x) {
-    static_cast<void>(sizeof(static_assert<std::numeric_limits<T>::has_infinity>));
-    return x == std::numeric_limits<T>::infinity() or x == -std::numeric_limits<T>::infinity();
-}
-
 
 // funtion feeds input to a neural network by using hnn (Haskell) package
 double feed(Genotype *genotype, Mat matrix, int type, int the_class = -1, cv::Mat confusion_matrix = cv::Mat::zeros(GESTURES,GESTURES, CV_32F)) {
 	//reconstruct matrices from available data to a suitable format
-
-//    for (int i=0; i<genotype_get_size(); i++)
-//printf("lets see %f \n", (*genotype)->genes[i]);
-//print_genotype(&(*genotype));   NOT
 
 	double* matrixzvector = (double *)malloc(sizeof(double)*(matrix.rows * matrix.cols));
 	int mm=0;
@@ -1020,15 +1353,11 @@ double feed(Genotype *genotype, Mat matrix, int type, int the_class = -1, cv::Ma
 
     for (int i=0; i<(int)sqrt(genotype_get_size()); i++){
         node_types[i] = (*genotype)->node_types[0];
-//printf(" %f ", (*genotype)->node_types[i]);
     }
-//printf("\n");
 
     for (int i=0; i<genotype_get_size(); i++){
         flat_matrix[i] = (*genotype)->genes[i];
-//printf(" %f ", flat_matrix[i]);
     }
-//printf("\n");
 
 	//result array
 	double *res;
@@ -1037,7 +1366,7 @@ double feed(Genotype *genotype, Mat matrix, int type, int the_class = -1, cv::Ma
 	int bsize = matrix.rows * matrix.cols;
 	int csize = (int)sqrt(genotype_get_size());
 	
-	/*
+	/*		parameters:
 		type - feedworward (0) or recurrent (1)
 		asize - number of weights
 		bsize - number of inputs
@@ -1058,31 +1387,25 @@ double feed(Genotype *genotype, Mat matrix, int type, int the_class = -1, cv::Ma
 	}else{
 		result = 0;
 		double val = *(res+1);
-//cout << val;
-if(!isnan(val))
-confusion_matrix.at<float>((int)the_class, 0) += val;
+
+		if(!isnan(val))
+			confusion_matrix.at<float>((int)the_class, 0) += val;
 
 		for(int i=2;i<=(int)*res;i++){
-//cout << setw(20) << *(res+i);
-if(!isnan(*(res+i)))
-confusion_matrix.at<float>((int)the_class, i-1) += *(res+i);
+			if(!isnan(*(res+i)))
+				confusion_matrix.at<float>((int)the_class, i-1) += *(res+i);
 
 			if(val < *(res+i)){
 				result = i-1;
 				val = *(res+i);
 			}
-//cout << setw(20) << val;
 		}
 	}
 	
-
-//cout << endl;
-
-
-//cout << confusion_matrix << endl;
 	return result;
 }
 
+//helper functions
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
     std::string item;
@@ -1098,11 +1421,10 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
+
 int main(int argc, char *argv[])
 {	
-
-
-initFaces();
+	initFaces();
 
     main_selected_head.x = 999;
     main_selected_head.y = 999;
@@ -1124,10 +1446,10 @@ initFaces();
 	prev_body.width = 999;
 	prev_body.height = 999;
 
-face_median.x = -1;
-face_median.y = -1;
+	face_median.x = -1;
+	face_median.y = -1;
 
-int generation_counter = 1;
+	int generation_counter = 1;
 
 	//initialisation of haskell insterface
 	int i;
@@ -1137,14 +1459,15 @@ int generation_counter = 1;
 	#endif
 	
 	
-	int a=1;
-//	printf("1 for training detectors, 2 for getting output from evolved detectors, 3 for training classifying ANN, 4 for testing evolved detectors together with trained classifier, 9 for data preparation: ");
-	//scanf("%d", &a);
+	int a=-1;
+	
+	//when running on server, comment this (needs to start directly, without user input)
+	printf("1 for training detectors, 2 for getting output from evolved detectors, 3 for training classifying ANN, 4 for testing evolved detectors together with trained classifier, 9 for data preparation: ");
+	scanf("%d", &a);
 
 	
 	//BOF EVOLVING DETECTORS
 	if(a == 1){
-
 		
 		char cCurrentPath[FILENAME_MAX];
 
@@ -1172,19 +1495,17 @@ int generation_counter = 1;
 			char * NEW_GENOTYPE_FILE_NAME = new char[std::strlen(GENOTYPE_FILE_NAME)+std::strlen(id)+16];
 		    std::strcpy(NEW_GENOTYPE_FILE_NAME,GENOTYPE_FILE_NAME);
 		    std::strcat(NEW_GENOTYPE_FILE_NAME,id);
-                    std::strcat(NEW_GENOTYPE_FILE_NAME,"gen");
-                    std::strcat(NEW_GENOTYPE_FILE_NAME,counter);
+            std::strcat(NEW_GENOTYPE_FILE_NAME,"gen");
+            std::strcat(NEW_GENOTYPE_FILE_NAME,counter);
 
 			char * NEW_GENOTYPE_FITNESS_FILE_NAME = new char[std::strlen(GENOTYPE_FITNESS_FILE_NAME)+std::strlen(id)+16];
 		    std::strcpy(NEW_GENOTYPE_FITNESS_FILE_NAME,GENOTYPE_FITNESS_FILE_NAME);
 		    std::strcat(NEW_GENOTYPE_FITNESS_FILE_NAME,id);
-                    std::strcat(NEW_GENOTYPE_FITNESS_FILE_NAME,"gen");
-                    std::strcat(NEW_GENOTYPE_FITNESS_FILE_NAME,counter);
+            std::strcat(NEW_GENOTYPE_FITNESS_FILE_NAME,"gen");
+            std::strcat(NEW_GENOTYPE_FITNESS_FILE_NAME,counter);
 			//eof specify names
 			
-					cout << "looking for: " << NEW_GENOTYPE_FITNESS_FILE_NAME << endl;
-
-std::string genotype_file_names = patch::to_string(detector_id);
+			std::string genotype_file_names = patch::to_string(detector_id);
 			
 			// specify name of the detector's evolutionary script
 			int parentID = getpid();  // should child kill when evolution is done?
@@ -1227,31 +1548,29 @@ std::string genotype_file_names = patch::to_string(detector_id);
         	
 	    	    CloseHandle(pi.hThread);
         	
+			//different ways to start the child process
 	    	#elif defined __APPLE__
 	    	    status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argvv, environ);
 	    	#else
-status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argvv, environ);
-        	//cout << "I am here 99 " << endl;
+				status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argvv, environ);
 	    	#endif
 	
 			free(name_with_extension);
 		}
 		//eof start hyperneat algorithms
 
-        		//cout << "I am here 2" << endl;
 
 		// for every generation, use every detector on an a set of images
 		for(int j=0;j<GENERATIONS;j++){			
-			        		//cout << "I am here 3" << endl;
+			
 			// 10 detectors, 4 gestures
 			Mat detectors_outputs = Mat(DETECTORS, 2, CV_32F, cvScalar(0.));
 			
 			// STEP_1: read ANN, create affinity matrix, feed affinity matrix to ANN and collect outputs for every detector in a matrix (rows - detectors; columns - gesture classes)
-        		//cout << "I am here 4" << endl;
 			for(int detector_id=1;detector_id<=DETECTORS;detector_id++){
-				        		//cout << "I am here 5" << endl;
-				char id[1*sizeof(int)+1000];
-				sprintf(id, "_%d", detector_id);
+
+			char id[1*sizeof(int)+1000];
+			sprintf(id, "_%d", detector_id);
 				
 			char counter[1*sizeof(int)+1000];
 			sprintf(counter, "_%d", generation_counter);
@@ -1259,8 +1578,8 @@ status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argvv, environ);
 			char * NEW_GENOTYPE_FILE_NAME = new char[std::strlen(GENOTYPE_FILE_NAME)+std::strlen(id)+30];
 		    std::strcpy(NEW_GENOTYPE_FILE_NAME,GENOTYPE_FILE_NAME);
 		    std::strcat(NEW_GENOTYPE_FILE_NAME,id);
-                    std::strcat(NEW_GENOTYPE_FILE_NAME,"gen");
-                    std::strcat(NEW_GENOTYPE_FILE_NAME,counter);
+            std::strcat(NEW_GENOTYPE_FILE_NAME,"gen");
+            std::strcat(NEW_GENOTYPE_FILE_NAME,counter);
         	
 				char * NEW_GENOTYPE_FITNESS_FILE_NAME = new char[std::strlen(GENOTYPE_FITNESS_FILE_NAME)+std::strlen(id)+30];
 			    std::strcpy(NEW_GENOTYPE_FITNESS_FILE_NAME,GENOTYPE_FITNESS_FILE_NAME);
@@ -1269,19 +1588,18 @@ status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argvv, environ);
                     std::strcat(NEW_GENOTYPE_FITNESS_FILE_NAME,counter);
 				//eof specify names
 				
-					cout << "looking for: " << NEW_GENOTYPE_FITNESS_FILE_NAME << endl;
-				
 				//genotype size 442x442 maximum connections - for the recurrent network (although it can still act as a feedforward network)
 				genotype_set_size(101*101);
         		Genotype ann = genotype_create();
-//cout << "I am here 6" << endl;
 
 				//read ANN that had been generated from peas framework
 				read_ann(&ann, NEW_GENOTYPE_FILE_NAME, NEW_GENOTYPE_FITNESS_FILE_NAME, 1, 1, 0);
-        		//cout << "I am here 1" << endl;
-				for(int sfg=1;sfg<=30;sfg++){ //7
+
+				for(int sfg=1;sfg<=30;sfg++){ 
+					
+					///comment out or not, depending on the experiment
 					//for(int person=1;person<=PEOPLE;person++){
-//if(person == 3) continue;
+					//	if(person == 3) continue;
 
 
 						
@@ -1302,6 +1620,8 @@ status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argvv, environ);
 							std::stringstream ss;
 							std::stringstream ss2;
 							std::stringstream ss3;
+							
+//temp - because the experiment required it
 if(sfg < 10)
 ss << "00";
 if(sfg>=10 && sfg<100)
@@ -1318,20 +1638,15 @@ ss << "0";
 							//full_filename.append("_");
 							//full_filename.append(ss3.str());
 							full_filename.append(".txt");
-cout << "looking for: "<<full_filename<<endl;
+
 							Mat resized_M;
-							//cout << "file name " << full_filename << endl;
 							
 							//if saved affinity matrix exists, read it instead of viewing pre-recorded videos
 							if(!std::ifstream(full_filename.c_str())){
-cout << "here" << endl;
-								int frames = 0;//start_capture(mode, string_feature_graph_demo, -1, diagonal_size, 80, sfg);
-								//printf("finished\n");
-	                    		//cout << "here2" << endl;
+								int frames = start_capture(mode, string_feature_graph_demo, -1, diagonal_size, 80, sfg);
 								//make affinity matrix
 								Mat M = match_strings(string_feature_graph_demo, string_feature_graph_demo, diagonal_size);
-								//cout << M.rows << " | " << M.cols << endl;
-	                    		//cout << "here3" << endl;
+
 								//resize the affinity matrix to match 21x21 detector's input
 								Size size(10,10);
 								resized_M = Mat(10,10, CV_32F, cvScalar(0.));
@@ -1351,34 +1666,33 @@ cout << "here" << endl;
 								full_filename2.append(".png");
 								save_heatmap(resized_M, full_filename2.c_str());
 							}else{
-cout << "here2" << endl;
 								FileStorage fs(full_filename, FileStorage::READ);
 								fs["mat"] >> resized_M;
 								fs.release();
-
-Size size(10,10);
+								
+								//resize the affinity matrix
+								Size size(10,10);
 								if (resized_M.cols != 0)
 									resize(resized_M,resized_M,size);
 							}
 
+//normalize the affinity matrix (do i really need this?)
 if (resized_M.cols != 0){
-normalize(resized_M, resized_M, 0.0, 1.0, NORM_MINMAX, -1);
+	normalize(resized_M, resized_M, 0.0, 1.0, NORM_MINMAX, -1);
 
-for(int row=0;row<resized_M.rows;row++)
-for(int column=0;column<resized_M.cols;column++)
-if(isnan(resized_M.at<float>(row, column)))
-resized_M.at<float>(row, column) = 0.0;
+	for(int row=0;row<resized_M.rows;row++)
+		for(int column=0;column<resized_M.cols;column++)
+			if(isnan(resized_M.at<float>(row, column)))
+				resized_M.at<float>(row, column) = 0.0;
 
-cout << "here3" << endl;
 	                    	
 							//feed affinity matrix into HyperNEAT generated ANN
 							int type=0;
 							double ann_output = feed(&ann, resized_M, type);
-cout << "here4" << endl;
+
 							//cout << "ANN output: " << ann_output << endl;
 							// round the output. NOTE: 0.5 means that the output neuron did not fire (sigmoid(0)==0.5)
 							// there is something wrong with using simply 0, therefore value 0.001 is used instead
-							//cout << "gesture " << sfg << " person " << person << " detector " << detector_id << endl;
 //if (sfg > 0) return 0;
                         	//if(!isnan(ann_output)){
 				//cout << "not nan" << endl;			detectors_outputs.at<float>(detector_id-1, floor((sfg-1)/5)) += max(0.000001, round(abs(ann_output)));
@@ -1389,7 +1703,6 @@ cout << "here4" << endl;
 							detectors_outputs.at<float>(detector_id-1, floor((sfg-1)/15)) += max(0.000001, round(abs(ann_output)));
                                 else
 							detectors_outputs.at<float>(detector_id-1, floor((sfg-1)/15)) += 0.000001;
-							//cout << "detectors: " << endl << detectors_outputs << endl;
 
 }else{
 	detectors_outputs.at<float>(detector_id-1, floor((sfg-1)/15)) += 0.000001;
@@ -1553,7 +1866,7 @@ ss << "0";
 							//cout << "file name " << full_filename << endl;
 							
 					if(!std::ifstream(full_filename.c_str())){
-						int frames = 0;//start_capture(mode, string_feature_graph_demo, -1/*-1*/, diagonal_size, 80, sfg);
+						int frames = start_capture(mode, string_feature_graph_demo, -1/*-1*/, diagonal_size, 80, sfg);
             	    	//printf("finished\n");
 						//make affinity matrix
 						Mat M = match_strings(string_feature_graph_demo, string_feature_graph_demo, diagonal_size);
@@ -1736,7 +2049,7 @@ cout << "trial " << trial << endl << endl;
 							full_filename.append(".yaml");
 							Mat resized_M;
 					if(!std::ifstream(full_filename.c_str())){
-						int frames = 0;//start_capture(mode, string_feature_graph_demo, -1/*-1*/, diagonal_size, 80, sfg);
+						int frames = start_capture(mode, string_feature_graph_demo, -1/*-1*/, diagonal_size, 80, sfg);
             	    	printf("finished\n");
 						//make affinity matrix
 						Mat M = match_strings(string_feature_graph_demo, string_feature_graph_demo, diagonal_size);
